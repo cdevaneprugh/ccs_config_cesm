@@ -7,7 +7,6 @@
   </submit_args>
   <directives>
     <directive>--partition=hpg-default</directive>
-    <directive>--share</directive>
     <directive>--mail-type=NONE</directive>
     <directive>--mail-user=$USER@ufl.edu</directive>
   </directives>
