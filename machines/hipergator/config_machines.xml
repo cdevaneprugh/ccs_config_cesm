@@ -1,19 +1,47 @@
+<!--
+  HiPerGator Machine Configuration for CTSM
+  ===========================================
+
+  Machine: University of Florida HiPerGator 3.0
+  Node type: hpg-default (AMD EPYC Rome, 128 cores/node)
+  Scheduler: SLURM
+
+  Key features:
+  - Uses pre-built shared PIO library (avoids rebuilding per case)
+  - OpenMPI 5.0.7 with GCC 14.2.0
+  - ESMF 8.8.1 for coupler
+
+  Limitations:
+  - mpi-serial not supported (ESMF requires MPI)
+  - Single-point runs use OpenMPI with NTASKS=1
+
+  Maintainer: Gerber Lab (sgerber@ufl.edu)
+  Last updated: 2026-01-13
+-->
 <machine MACH="hipergator">
 
-    <!-- Basic system info -->
+    <!-- Machine identification -->
     <DESC>UF HiPerGator | hpg-default node | AMD ROME 128 cores per node | slurm</DESC>
     <OS>LINUX</OS>
     <COMPILERS>gnu</COMPILERS>
     <MPILIBS>openmpi</MPILIBS>
 
-    <!-- File system info -->
+    <!--
+      File system paths
+      Uses /blue/gerber for high-performance storage (Lustre/NVME).
+      Input data is shared across the group; output is per-user.
+    -->
     <CIME_OUTPUT_ROOT>/blue/gerber/$ENV{USER}/earth_model_output/cime_output_root</CIME_OUTPUT_ROOT>
     <DIN_LOC_ROOT>/blue/gerber/earth_models/inputdata</DIN_LOC_ROOT>
     <DIN_LOC_ROOT_CLMFORC>$DIN_LOC_ROOT/atm/datm7</DIN_LOC_ROOT_CLMFORC>
     <DOUT_S_ROOT>$CIME_OUTPUT_ROOT/archive/$CASE</DOUT_S_ROOT>
     <BASELINE_ROOT>/blue/gerber/$ENV{USER}/earth_model_output/cesm_baselines</BASELINE_ROOT>
 
-    <!-- Misc system info -->
+    <!--
+      System tools and limits
+      CPRNC is for comparing NetCDF output (used in testing).
+      128 cores/node is for AMD EPYC Rome processors.
+    -->
     <CCSM_CPRNC>/blue/gerber/earth_models/shared/cprnc/bld/cprnc</CCSM_CPRNC>
     <GMAKE>make</GMAKE>
     <BATCH_SYSTEM>slurm</BATCH_SYSTEM>
@@ -27,7 +55,12 @@
       <executable>mpirun</executable>
     </mpirun>
 
-    <!-- Module system -->
+    <!--
+      Module system (lmod)
+      HiPerGator uses lmod for software management.
+      Module load order matters: standalone modules first, then
+      compiler and compiler-dependent modules in dependency order.
+    -->
     <module_system type="module" allow_error="true">
       <init_path lang="perl">/apps/lmod/lmod/init/perl</init_path>
       <init_path lang="python">/apps/lmod/lmod/init/env_modules_python.py</init_path>
@@ -68,9 +101,15 @@
       <env name="NETCDF_FORTRAN_PATH">$ENV{HPC_NETCDF_F_DIR}</env>
 
       <!-- ParallelIO (pre-built in shared directory) -->
+      <!-- PIO_VERSION_MAJOR tells case.build to use external PIO instead of rebuilding -->
+      <!-- PIO_TYPENAME_VALID_VALUES specifies supported I/O backends (netcdf only for this build) -->
+      <!-- LD_LIBRARY_PATH must include PIO_LIBDIR for runtime dynamic linking -->
       <env name="PIO">/blue/gerber/earth_models/shared/parallelio/bld</env>
       <env name="PIO_LIBDIR">/blue/gerber/earth_models/shared/parallelio/bld/lib</env>
       <env name="PIO_INCDIR">/blue/gerber/earth_models/shared/parallelio/bld/include</env>
+      <env name="PIO_VERSION_MAJOR">2</env>
+      <env name="PIO_TYPENAME_VALID_VALUES">netcdf</env>
+      <env name="LD_LIBRARY_PATH">/blue/gerber/earth_models/shared/parallelio/bld/lib:$ENV{LD_LIBRARY_PATH}</env>
 
       <!-- OpenMP stack size for hpg-default CPU -->
       <env name="OMP_STACKSIZE">256M</env>

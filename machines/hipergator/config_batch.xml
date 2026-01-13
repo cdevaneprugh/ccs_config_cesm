@@ -1,15 +1,43 @@
+<!--
+  HiPerGator SLURM Batch Configuration
+  =====================================
+
+  Key settings:
+  - Partition: hpg-default (standard compute nodes)
+  - Memory: 16GB per job (override with xmlchange JOB_MEMORY)
+  - No email notifications by default
+
+  QOS (Quality of Service) queues:
+  - gerber: Default queue, up to 20 cores (QOS limits: cpu=10)
+  - gerber-b: Burst queue, up to 128 cores (for larger jobs)
+
+  Note: --exclusive was removed because HiPerGator uses shared nodes.
+  Jobs request only the resources they need.
+
+  Last updated: 2026-01-13
+-->
 <batch_system MACH="hipergator" type="slurm">
   <batch_submit>sbatch</batch_submit>
+
+  <!-- Submit arguments passed to sbatch -->
   <submit_args>
     <arg flag="--time" name="$JOB_WALLCLOCK_TIME"/>
     <arg flag="-q" name="$JOB_QUEUE"/>
     <arg flag="--mem" name="16GB"/>
   </submit_args>
+
+  <!-- SLURM directives added to batch scripts -->
   <directives>
     <directive>--partition=hpg-default</directive>
     <directive>--mail-type=NONE</directive>
     <directive>--mail-user=$USER@ufl.edu</directive>
   </directives>
+
+  <!--
+    Queue definitions (maps to SLURM QOS)
+    jobmin/jobmax are task count limits for queue selection.
+    Use xmlchange JOB_QUEUE to override.
+  -->
   <queues>
     <queue jobmin="1" jobmax="20" default="true">gerber</queue>
     <queue jobmin="1" jobmax="128">gerber-b</queue>
