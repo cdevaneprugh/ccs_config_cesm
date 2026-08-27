@@ -11,7 +11,7 @@
   - gerber: Default queue, up to 20 cores (QOS limits: cpu=10)
   - gerber-b: Burst queue, up to 128 cores (for larger jobs)
 
-  Note: --exclusive was removed because HiPerGator uses shared nodes.
+  Note: the exclusive flag was removed because HiPerGator uses shared nodes.
   Jobs request only the resources they need.
 
   Last updated: 2026-01-13
